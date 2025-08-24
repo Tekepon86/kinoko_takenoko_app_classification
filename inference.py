@@ -1,24 +1,16 @@
+# v1-v3/inference.py 〔HFなし・同梱pt直読み版〕
 from pathlib import Path
+from typing import Union, IO
 import torch
 from torchvision import transforms
 from PIL import Image
-from models.model_def import CNN
+from models.model_def import CNN  # 学習時に使ったクラス
 
-# ① 追加：自動DLヘルパー（utils/weights.py を作ってある前提）
-from utils.weights import ensure_weights
-
-# ② Hugging Face の直リンクに置き換える（自分のURLに差し替え）
-HF_URL = "https://huggingface.co/<your-username>/<your-model-repo>/resolve/main/kinoko_takenoko_v3.pt"
-HF_SHA256 = None  # 任意で入れる（検証を強めたいとき）
-
-# ③ 参照先はリポ直下の weights/ に統一（Gitには載せない）
-WEIGHTS_PATH = Path("weights/kinoko_takenoko_v3.pt")
-
-# ④ 推論デバイス（Cloudは基本CPU。ローカルはGPUがあれば自動で使う）
+# ===== デバイス =====
 def _device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ⑤ v3の前処理（あなたのコードをそのまま使用）
+# ===== 前処理（v3の設定）=====
 transform = transforms.Compose([
     transforms.Grayscale(num_output_channels=1),
     transforms.Resize(256),
@@ -29,32 +21,27 @@ transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-# ⑥ モデルのロード（state_dict 保存/フルモデル保存 どちらにも対応）
+# ===== モデルロード（同梱 .pt を直接読む）=====
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "kinoko_takenoko_v3.pt"
+
 def load_model() -> torch.nn.Module:
-    # 初回のみDL。2回目以降はweights/から即読み込み
-    w = ensure_weights(WEIGHTS_PATH, HF_URL, HF_SHA256)
-
     dev = _device()
-    # A) torch.save(model) で保存されている場合
-    try:
-        m = torch.load(w, map_location=dev)
-        m.eval()
-        return m
-    except Exception:
-        # B) torch.save(model.state_dict()) の場合はこちら
-        m = CNN()  # 必要なら引数（num_classes等）を合わせて
-        state = torch.load(w, map_location="cpu")
-        m.load_state_dict(state, strict=True)
-        m.to(dev).eval()
-        return m
+    model = CNN()  # 必要なら num_classes=2 など学習時の引数に合わせる
+    state = torch.load(MODEL_PATH, map_location="cpu")
+    model.load_state_dict(state, strict=True)
+    model.to(dev).eval()
+    return model
 
-# ⑦ 画像パスを受け取って予測（ファイル/BytesIOどちらでもOK）
+# ===== 予測 =====
 @torch.inference_mode()
-def predict(image_path_or_file) -> dict:
+def predict(image_path_or_file: Union[str, Path, IO[bytes]]) -> dict:
+    """
+    image_path_or_file: 画像パス or BytesIO/UploadedFile どちらでもOK
+    return: {"label": str, "confidence": float, "probs": list[float]}
+    """
     dev = _device()
     model = load_model()
 
-    # PILで開く（file-like でもパスでもOK）
     img = Image.open(image_path_or_file).convert("L")
     x = transform(img).unsqueeze(0).to(dev)  # [1,3,224,224]
 
@@ -62,7 +49,5 @@ def predict(image_path_or_file) -> dict:
     probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
     idx = int(probs.argmax())
 
-    # ★クラス割当は学習と必ず合わせる
-    # いまは v3 = {0: kinoko, 1: takenoko} 前提
-    labels = {0: "kinoko", 1: "takenoko"}
+    labels = {0: "kinoko", 1: "takenoko"}  # ←学習時のラベル順に必ず合わせる
     return {"label": labels[idx], "confidence": float(probs[idx]), "probs": probs.tolist()}
