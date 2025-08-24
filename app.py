@@ -19,7 +19,7 @@ if uploaded_file is not None:
         img.verify()  # ここで例外になったら不正画像
         img = Image.open(io.BytesIO(bytes_data))  # verify後は再オープンが必要
 
-        st.image(img, caption="アップロードされた画像", use_column_width=True)
+        st.image(img, caption="アップロードされた画像", use_container_width=True)
 
     except Exception as e:
         st.error(f"画像の読み込みに失敗しました: {e}")
@@ -38,3 +38,4 @@ if uploaded_file is not None:
         res = predict(io.BytesIO(bytes_data))  # predict は PIL/BytesIO/Path に対応済みの想定
         # predict が dict を返す想定に合わせて表示
         st.success(f"予測結果: **{res['label']}**（確信度 {res['confidence']:.3f}）")
+
