@@ -1,5 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
+.venv/
+weights/            # 自動DLした.ptは保存されるがコミットしない
+*.pt
 
 # C extensions
 *.so
