@@ -10,7 +10,7 @@ PyTorch の ResNet18 を用いた **画像分類モデル** の構築プロジ�
 - **データ拡張（augmentation）** により精度を改善  
 - **グレースケール学習** により形状ベースの分類性能を向上  
 - **Test Accuracy 1.0** を達成（一部条件下）
-
+- **アプリはこちら（https://kinokotakenokoapp-nwqnhp3hpw2wgnx7dbk23y.streamlit.app/）
 ---
 
 ## 🛠️ 使用技術
