@@ -35,7 +35,7 @@ PyTorch の ResNet18 を用いた **画像分類モデル** の構築プロジ�
 - **グレースケール化**: 色特徴を捨て、形状に基づく分類 → Test Acc 1.0  
 - **不均衡データ対応**: Stratified-K fold を導入して安定評価
 
-- 詳細は [スライド資料](https://github.com/Tekepon86/kinoko_takenoko_app_classification/raw/main/docs/画像分類＋物体検知スライド.pdf)
+- 詳細は [スライド資料](https://github.com/Tekepon86/kinoko_takenoko_app_classification/raw/main/docs/app_slide.pdf)
 をご覧ください
 ---
 
