@@ -8,8 +8,8 @@ from models.model_def import CNN
 from utils.weights import ensure_weights
 
 # === あなたのHF直リンクに置き換える ===
-HF_URL = "https://huggingface.co/Tetsushi86/kinoko-takenoko-v3/resolve/main/kinoko_takenoko_v3.pt"
-WEIGHTS_PATH = Path(__file__).resolve().parent / "weights" / "kinoko_takenoko_v3.pt"
+HF_URL = "https://huggingface.co/Tetsushi86/kinoko-takenoko-v3/resolve/main/kinoko_takenoko_v3.1_250828.pt"
+WEIGHTS_PATH = Path(__file__).resolve().parent / "weights" / "kinoko_takenoko_v3.1_250828.pt"
 
 def _device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -49,3 +49,4 @@ def predict(image_path_or_file: Union[str, Path, IO[bytes]]) -> dict:
 
     labels = {0: "kinoko", 1: "takenoko"}  # 学習時のラベル順に合わせる
     return {"label": labels[idx], "confidence": float(probs[idx]), "probs": probs.tolist()}
+
